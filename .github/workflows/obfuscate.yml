@@ -49,33 +49,37 @@ jobs:
           const originalCode = fs.readFileSync(sourceFilePath, 'utf8');
 
           const obfuscationOptions = {
+              // --- 基础压缩 ---
               compact: true,
               simplify: true,
+              target: 'browser-no-eval',
+              
+              // --- 混淆强度 (乱序逻辑) ---
               controlFlowFlattening: true,
-              controlFlowFlatteningThreshold: 0.4,
+              controlFlowFlatteningThreshold: 0.8, // 提高到 80% 逻辑混淆
               
-              // 关键配置，防止 1101 错误
-              renameGlobals: false,
-              renameProperties: false,
-              ignoreImports: true,
+              // --- 关键：自动加密你的配置 (UUID/域名) ---
+              stringArray: true,              // 开启字符串提取
+              stringArrayThreshold: 1,        // 100% 的字符串都会被处理
+              stringArrayEncoding: ['rc4'],   // 使用 RC4 加密 (比 Base64 更难破解，全自动)
+              splitStrings: true,             // 切割长字符串，增加阅读难度
               
-              // 保护关键函数名不被改掉
+              // --- 防止 Cloudflare 1101 报错的保护配置 ---
+              renameGlobals: false,           // 保护 Worker 全局变量
+              renameProperties: false,        // 保护 request.cf 等属性
+              ignoreImports: true,            // 保护 import { connect }
+              
+              // 保护关键函数名不被修改
               reservedNames: [
                   'fetch', 'default', 'connect', 'env', 'ctx', 'request',
                   'WebSocketPair', 'Response', 'ReadableStream', 'WritableStream'
               ],
-
-              stringArray: true,
-              stringArrayThreshold: 0.75,
-              stringArrayEncoding: [], // 关闭 Base64
-              splitStrings: false,
               
-              target: 'browser-no-eval',
-              disableConsoleOutput: false, // 防止 'console' undefined 错误
-              selfDefending: false,
+              // --- 调试保护 ---
+              disableConsoleOutput: false,    // 必须为 false，防止报错
+              selfDefending: false,           // 必须为 false
               debugProtection: false
           };
-
           const obfuscatedCode = JavaScriptObfuscator.obfuscate(originalCode, obfuscationOptions).getObfuscatedCode();
           
           fs.writeFileSync(path.join(process.cwd(), outputFileName), obfuscatedCode, 'utf8');
