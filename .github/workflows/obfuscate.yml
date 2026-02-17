@@ -60,7 +60,7 @@ jobs:
               
               // --- 关键：自动加密你的配置 (UUID/域名) ---
               stringArray: true,              // 开启字符串提取
-              stringArrayThreshold: 1,        // 100% 的字符串都会被处理
+              stringArrayThreshold: 0.7,        // 100% 的字符串都会被处理
               stringArrayEncoding: ['rc4'],   // 使用 RC4 加密 (比 Base64 更难破解，全自动)
               splitStrings: true,             // 切割长字符串，增加阅读难度
               
