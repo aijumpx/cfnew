@@ -1,265 +1,290 @@
 import { connect } from 'cloudflare:sockets';
-
-const _K = {
-    K1: "ZWMzODdmODktYmIxMy00OWMyLThkNzAtYTc2ODVjOGViYjAw",
-    K2: "aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL3F3ZXItc2VhcmNoL2Jlc3RpcC9yZWZzL2hlYWRzL21haW4va2VqaWxhbmRiZXN0aXAudHh0",
-    K3: "aHR0cHM6Ly9jZi5tYWlzaGlwLmNvbS9zdWI=",
-    D_LIST: "WyJjbG91ZGZsYXJlLjE4MjY4Mi54eXoiLCJzcGVlZC5tYXJpc2FsbmMuY29tIiwiZnJlZXl4LmNsb3VkZmxhcmU4OC5ldS5vcmciLCJiZXN0Y2YudG9wIiwiY2RuLjIwMjAxMTEueHl6IiwiY2ZpcC5jZmNkbi52aXAiLCJjZi4wc20uY29tIiwiY2YuMDkwMjI3Lnh5eiIsImNmLnpoZXRlbmdzaGEuZXUub3JnIiwiY2xvdWRmbGFyZS45ankuY2MiLCJjZi56ZXJvbmUtY2RuLnBwLnVhIiwiY2ZpcC4xMzIzMTIzLnh5eiIsImNuYW1lZnVja3h4cy55dWNoZW4uaWN1IiwiY2xvdWRmbGFyZS1pcC5tb2Zhc2hpLmx0ZCIsIjExNTE1NS54eXoiLCJjbmFtZS54aXJhbmNkbi51cyIsImYzMDU4MTcxY2FkLjAwMjQwNC54eXoiLCI4Ljg4OTI4OC54eXoiLCJjZG4udHpwcm8ueHl6IiwiY2YuODc3NzcxLnh5eiIsInhuLS1iNmdhYy5ldS5vcmciXQ==",
-    B_LIST: "W3siZG9tYWluIjoiUHJveHlJUC5VUy5DTUxpdXNzc3MubmV0IiwicmVnaW9uIjoiVVMiLCJwb3J0Ijo0NDN9LHsiZG9tYWluIjoiUHJveHlJUC5TRy5DTUxpdXNzc3MubmV0IiwicmVnaW9uIjoiU0ciLCJwb3J0Ijo0NDN9LHsiZG9tYWluIjoiUHJveHlJUC5KUC5DTUxpdXNzc3MubmV0IiwicmVnaW9uIjoiSlAiLCJwb3J0Ijo0NDN9LHsiZG9tYWluIjoiUHJveHlJUC5ISy5DTUxpdXNzc3MubmV0IiwicmVnaW9uIjoiSEsiLCJwb3J0Ijo0NDN9LHsiZG9tYWluIjoiUHJveHlJUC5LUi5DTUxpdXNzc3MubmV0IiwicmVnaW9uIjoiS1IiLCJwb3J0Ijo0NDN9LHsiZG9tYWluIjoiUHJveHlJUC5ERS5DTUxpdXNzc3MubmV0IiwicmVnaW9uIjoiREUiLCJwb3J0Ijo0NDN9LHsiZG9tYWluIjoiUHJveHlJUC5HQi5DTUxpdXNzc3MubmV0IiwicmVnaW9uIjoiR0IiLCJwb3J0Ijo0NDN9XQ=="
+const uuid = 'ec387f89-bb13-49c2-8d70-a7685c8ebb06';//vless使用的uuid
+const passWordSha224 = 'bf130ee84b6aa969cef13743b8704646069a969112be727d2b702e41';
+const bufferSize = 640 * 1024;
+const flushTime = 2;
+const proxyStrategyOrder = ['socks', 'http'];
+const proxyIpAddrs = { EU: 'ProxyIP.DE.CMLiussss.net', AS: 'ProxyIP.SG.CMLiussss.net', JP: 'ProxyIP.JP.CMLiussss.net', US: 'ProxyIP.US.CMLiussss.net' };//分区域proxyip
+const coloRegions = {
+	JP: new Set(['FUK', 'ICN', 'KIX', 'NRT', 'OKA']),
+	EU: new Set([
+		'ACC', 'ADB', 'ALA', 'ALG', 'AMM', 'AMS', 'ARN', 'ATH', 'BAH', 'BCN', 'BEG', 'BGW', 'BOD', 'BRU', 'BTS', 'BUD', 'CAI',
+		'CDG', 'CPH', 'CPT', 'DAR', 'DKR', 'DMM', 'DOH', 'DUB', 'DUR', 'DUS', 'DXB', 'EBB', 'EDI', 'EVN', 'FCO', 'FRA', 'GOT',
+		'GVA', 'HAM', 'HEL', 'HRE', 'IST', 'JED', 'JIB', 'JNB', 'KBP', 'KEF', 'KWI', 'LAD', 'LED', 'LHR', 'LIS', 'LOS', 'LUX',
+		'LYS', 'MAD', 'MAN', 'MCT', 'MPM', 'MRS', 'MUC', 'MXP', 'NBO', 'OSL', 'OTP', 'PMO', 'PRG', 'RIX', 'RUH', 'RUN', 'SKG',
+		'SOF', 'STR', 'TBS', 'TLL', 'TLV', 'TUN', 'VIE', 'VNO', 'WAW', 'ZAG', 'ZRH']),
+	AS: new Set([
+		'ADL', 'AKL', 'AMD', 'BKK', 'BLR', 'BNE', 'BOM', 'CBR', 'CCU', 'CEB', 'CGK', 'CMB', 'COK', 'DAC', 'DEL', 'HAN', 'HKG',
+		'HYD', 'ISB', 'JHB', 'JOG', 'KCH', 'KHH', 'KHI', 'KTM', 'KUL', 'LHE', 'MAA', 'MEL', 'MFM', 'MLE', 'MNL', 'NAG', 'NOU',
+		'PAT', 'PBH', 'PER', 'PNH', 'SGN', 'SIN', 'SYD', 'TPE', 'ULN', 'VTE'])
 };
-
-const _U = {
-    d: (s) => { try { return atob(s); } catch { return ""; } },
-    j: (s) => { try { return JSON.parse(atob(s)); } catch { return []; } },
-    u: () => _U.d(_K.K1),
-    g: () => _U.d(_K.K2),
-    s: () => _U.d(_K.K3)
+const coloToProxyMap = new Map();
+for (const [region, colos] of Object.entries(coloRegions)) { for (const colo of colos) coloToProxyMap.set(colo, proxyIpAddrs[region]) }
+const uuidBytes = new Uint8Array(16), hashBytes = new Uint8Array(56), offsets = [0, 0, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 4, 4, 4, 4];
+for (let i = 0, c; i < 16; i++) uuidBytes[i] = (((c = uuid.charCodeAt(i * 2 + offsets[i])) > 64 ? c + 9 : c) & 0xF) << 4 | (((c = uuid.charCodeAt(i * 2 + offsets[i] + 1)) > 64 ? c + 9 : c) & 0xF);
+for (let i = 0; i < 56; i++) hashBytes[i] = passWordSha224.charCodeAt(i);
+const [textEncoder, textDecoder, socks5Init] = [new TextEncoder(), new TextDecoder(), new Uint8Array([5, 2, 0, 2])];
+const html = `<html><head><title>404 Not Found</title></head><body><center><h1>404 Not Found</h1></center><hr><center>nginx/1.25.3</center></body></html>`;
+const binaryAddrToString = (addrType, addrBytes) => {
+	if (addrType === 3) return textDecoder.decode(addrBytes);
+	if (addrType === 1) return `${addrBytes[0]}.${addrBytes[1]}.${addrBytes[2]}.${addrBytes[3]}`;
+	if (addrType === 4) {
+		let ipv6 = ((addrBytes[0] << 8) | addrBytes[1]).toString(16);
+		for (let i = 1; i < 8; i++) ipv6 += ':' + ((addrBytes[i * 2] << 8) | addrBytes[i * 2 + 1]).toString(16);
+		return `[${ipv6}]`;
+	}
 };
-
-const _Geo = {
-    detect: (req) => {
-        try {
-            const c = req.cf?.country;
-            if (!c) return 'HK';
-            const m = { 'US': 'US', 'CA': 'US', 'SG': 'SG', 'TH': 'SG', 'MY': 'SG', 'JP': 'JP', 'KR': 'KR', 'DE': 'DE', 'FR': 'DE', 'NL': 'DE', 'GB': 'GB', 'CN': 'HK' };
-            return m[c] || 'HK';
-        } catch { return 'HK'; }
-    },
-    getBest: (region) => {
-        const pool = _U.j(_K.B_LIST);
-        if (!pool.length) return null;
-        const target = _Geo.map(region);
-        const match = pool.find(i => i.region === target);
-        return match ? `${match.domain}:${match.port}` : `${pool[0].domain}:${pool[0].port}`;
-    },
-    map: (r) => {
-        const near = { 'US': 'US', 'SG': 'SG', 'JP': 'JP', 'HK': 'HK', 'KR': 'KR', 'DE': 'DE', 'GB': 'GB' };
-        return near[r] || 'HK';
-    }
+const parseHostPort = (addr, defaultPort) => {
+	if (addr.charCodeAt(0) === 91) {
+		const sepIndex = addr.indexOf(']:');
+		if (sepIndex !== -1) return [addr.substring(0, sepIndex + 1), addr.substring(sepIndex + 2)];
+		return [addr, defaultPort];
+	}
+	const tpIndex = addr.indexOf('.tp');
+	const lastColon = addr.lastIndexOf(':');
+	if (tpIndex !== -1 && lastColon === -1) return [addr, addr.substring(tpIndex + 3, addr.indexOf('.', tpIndex + 3))];
+	if (lastColon === -1) return [addr, defaultPort];
+	return [addr.substring(0, lastColon), addr.substring(lastColon + 1)];
 };
-
-const _P = {
-    parse: (chunk, token) => {
-        if (chunk.byteLength < 24) return { err: _U.d('aW52YWxpZCBkYXRh') };
-        const v = new Uint8Array(chunk.slice(0, 1));
-        if (_P.fmtId(new Uint8Array(chunk.slice(1, 17))) !== token) return { err: _U.d('aW52YWxpZCB1c2Vy') };
-        
-        const optLen = new Uint8Array(chunk.slice(17, 18))[0];
-        const cmd = new Uint8Array(chunk.slice(18 + optLen, 19 + optLen))[0];
-        const isUDP = cmd === 2;
-        if (cmd !== 1 && cmd !== 2) return { err: _U.d('Y29tbWFuZCBpcyBub3Qgc3VwcG9ydGVk') };
-
-        const pIdx = 19 + optLen;
-        const port = new DataView(chunk.slice(pIdx, pIdx + 2)).getUint16(0);
-        const aType = new Uint8Array(chunk.slice(pIdx + 2, pIdx + 3))[0];
-        
-        let aIdx = pIdx + 3;
-        let host = '';
-        let rawIdx = 0;
-
-        if (aType === 1) {
-            host = new Uint8Array(chunk.slice(aIdx, aIdx + 4)).join('.');
-            rawIdx = aIdx + 4;
-        } else if (aType === 2) {
-            const len = new Uint8Array(chunk.slice(aIdx, aIdx + 1))[0];
-            aIdx += 1;
-            host = new TextDecoder().decode(chunk.slice(aIdx, aIdx + len));
-            rawIdx = aIdx + len;
-        } else if (aType === 3) {
-            const p = [];
-            const v6 = new DataView(chunk.slice(aIdx, aIdx + 16));
-            for (let i = 0; i < 8; i++) p.push(v6.getUint16(i * 2).toString(16));
-            host = p.join(':');
-            rawIdx = aIdx + 16;
-        } else {
-            return { err: _U.d('aW52YWxpZCBhZGRyZXNzVHlwZQ==') };
-        }
-
-        return { err: null, type: aType, port, host, isUDP, idx: rawIdx, ver: v };
-    },
-    fmtId: (arr) => {
-        const t = Array.from({ length: 256 }, (v, i) => (i + 256).toString(16).slice(1));
-        return (t[arr[0]] + t[arr[1]] + t[arr[2]] + t[arr[3]] + "-" + t[arr[4]] + t[arr[5]] + "-" + t[arr[6]] + t[arr[7]] + "-" + t[arr[8]] + t[arr[9]] + "-" + t[arr[10]] + t[arr[11]] + t[arr[12]] + t[arr[13]] + t[arr[14]] + t[arr[15]]).toLowerCase();
-    }
+const parseAuthString = (authParam) => {
+	let username, password, hostStr;
+	const atIndex = authParam.lastIndexOf('@');
+	if (atIndex === -1) { hostStr = authParam } else {
+		const cred = authParam.substring(0, atIndex);
+		hostStr = authParam.substring(atIndex + 1);
+		const colonIndex = cred.indexOf(':');
+		if (colonIndex === -1) { username = cred } else {
+			username = cred.substring(0, colonIndex);
+			password = cred.substring(colonIndex + 1);
+		}
+	}
+	const [hostname, port] = parseHostPort(hostStr, 1080);
+	return { username, password, hostname, port };
 };
-
+const createConnect = (hostname, port, socket = connect({ hostname, port })) => socket.opened.then(() => socket);
+const connectViaSocksProxy = async (targetAddrType, targetPortNum, socksAuth, addrBytes) => {
+	const socksSocket = await createConnect(socksAuth.hostname, socksAuth.port);
+	const writer = socksSocket.writable.getWriter();
+	const reader = socksSocket.readable.getReader();
+	await writer.write(socks5Init);
+	const { value: authResponse } = await reader.read();
+	if (!authResponse || authResponse[0] !== 5 || authResponse[1] === 0xFF) return null;
+	if (authResponse[1] === 2) {
+		if (!socksAuth.username) return null;
+		const userBytes = textEncoder.encode(socksAuth.username);
+		const passBytes = textEncoder.encode(socksAuth.password || '');
+		const uLen = userBytes.length, pLen = passBytes.length, authReq = new Uint8Array(3 + uLen + pLen)
+		authReq[0] = 1, authReq[1] = uLen, authReq.set(userBytes, 2), authReq[2 + uLen] = pLen, authReq.set(passBytes, 3 + uLen);
+		await writer.write(authReq);
+		const { value: authResult } = await reader.read();
+		if (!authResult || authResult[0] !== 1 || authResult[1] !== 0) return null;
+	} else if (authResponse[1] !== 0) { return null }
+	const isDomain = targetAddrType === 3, socksReq = new Uint8Array(6 + addrBytes.length + (isDomain ? 1 : 0));
+	socksReq[0] = 5, socksReq[1] = 1, socksReq[2] = 0, socksReq[3] = targetAddrType;
+	isDomain ? (socksReq[4] = addrBytes.length, socksReq.set(addrBytes, 5)) : socksReq.set(addrBytes, 4);
+	socksReq[socksReq.length - 2] = targetPortNum >> 8, socksReq[socksReq.length - 1] = targetPortNum & 0xff;
+	await writer.write(socksReq);
+	const { value: finalResponse } = await reader.read();
+	if (!finalResponse || finalResponse[1] !== 0) return null;
+	writer.releaseLock(), reader.releaseLock();
+	return socksSocket;
+};
+const staticHeaders = `User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36\r\nProxy-Connection: Keep-Alive\r\nConnection: Keep-Alive\r\n\r\n`;
+const encodedStaticHeaders = textEncoder.encode(staticHeaders);
+const connectViaHttpProxy = async (targetAddrType, targetPortNum, httpAuth, addrBytes) => {
+	const { username, password, hostname, port } = httpAuth;
+	const proxySocket = await createConnect(hostname, port);
+	const writer = proxySocket.writable.getWriter();
+	const httpHost = binaryAddrToString(targetAddrType, addrBytes);
+	let dynamicHeaders = `CONNECT ${httpHost}:${targetPortNum} HTTP/1.1\r\nHost: ${httpHost}:${targetPortNum}\r\n`;
+	if (username) dynamicHeaders += `Proxy-Authorization: Basic ${btoa(`${username}:${password || ''}`)}\r\n`;
+	const fullHeaders = new Uint8Array(dynamicHeaders.length * 3 + encodedStaticHeaders.length);
+	const { written } = textEncoder.encodeInto(dynamicHeaders, fullHeaders);
+	fullHeaders.set(encodedStaticHeaders, written);
+	await writer.write(fullHeaders.subarray(0, written + encodedStaticHeaders.length));
+	writer.releaseLock();
+	const reader = proxySocket.readable.getReader();
+	const buffer = new Uint8Array(256);
+	let bytesRead = 0, statusChecked = false;
+	while (bytesRead < buffer.length) {
+		const { value, done } = await reader.read();
+		if (done || bytesRead + value.length > buffer.length) return null;
+		const prevBytesRead = bytesRead;
+		buffer.set(value, bytesRead);
+		bytesRead += value.length;
+		if (!statusChecked && bytesRead >= 12) {
+			if (buffer[9] !== 50) return null;
+			statusChecked = true;
+		}
+		const searchStart = Math.max(15, prevBytesRead - 3);
+		for (let i = searchStart; i <= bytesRead - 4; i++) {
+			const found = buffer[i] === 13 && buffer[i + 1] === 10 && buffer[i + 2] === 13 && buffer[i + 3] === 10;
+			if (found) {
+				reader.releaseLock();
+				if (bytesRead > i + 4) {
+					const { readable, writable } = new TransformStream();
+					const writer = writable.getWriter();
+					writer.write(buffer.subarray(i + 4, bytesRead));
+					writer.releaseLock();
+					proxySocket.readable.pipeTo(writable).catch(() => { });
+					// @ts-ignore
+					proxySocket.readable = readable;
+				}
+				return proxySocket;
+			}
+		}
+	}
+	return null;
+};
+const parseAddress = (buffer, offset, addrType) => {
+	const addressLength = addrType === 3 ? buffer[offset++] : addrType === 1 ? 4 : addrType === 4 ? 16 : null;
+	if (addressLength === null) return null;
+	const dataOffset = offset + addressLength;
+	if (dataOffset > buffer.length) return null;
+	const addrBytes = buffer.subarray(offset, dataOffset);
+	return { addrBytes, dataOffset };
+};
+const parseRequestData = (firstChunk) => {
+	for (let i = 0; i < 16; i++) if (firstChunk[i + 1] !== uuidBytes[i]) return null;
+	let offset = 19 + firstChunk[17];
+	const port = (firstChunk[offset] << 8) | firstChunk[offset + 1];
+	let addrType = firstChunk[offset + 2];
+	if (addrType !== 1) addrType += 1;
+	const addrInfo = parseAddress(firstChunk, offset + 3, addrType);
+	if (!addrInfo) return null;
+	return { addrType, addrBytes: addrInfo.addrBytes, dataOffset: addrInfo.dataOffset, port };
+};
+const parseTransparent = (firstChunk) => {
+	for (let i = 0; i < 56; i++) if (firstChunk[i] !== hashBytes[i]) return null;
+	const addrType = firstChunk[59];
+	const addrInfo = parseAddress(firstChunk, 60, addrType);
+	if (!addrInfo) return null;
+	const port = (firstChunk[addrInfo.dataOffset] << 8) | firstChunk[addrInfo.dataOffset + 1];
+	return { addrType, addrBytes: addrInfo.addrBytes, dataOffset: addrInfo.dataOffset + 4, port };
+};
+const parseShadow = (firstChunk) => {
+	const addrType = firstChunk[0];
+	const addrInfo = parseAddress(firstChunk, 1, addrType);
+	if (!addrInfo) return null;
+	const port = (firstChunk[addrInfo.dataOffset] << 8) | firstChunk[addrInfo.dataOffset + 1];
+	return { addrType, addrBytes: addrInfo.addrBytes, dataOffset: addrInfo.dataOffset + 2, port };
+};
+const strategyExecutorMap = new Map([
+	[0, async ({ addrType, port, addrBytes }) => {
+		const hostname = binaryAddrToString(addrType, addrBytes);
+		return createConnect(hostname, port);
+	}],
+	[1, async ({ addrType, port, addrBytes }, param) => {
+		const socksAuth = parseAuthString(param);
+		return connectViaSocksProxy(addrType, port, socksAuth, addrBytes);
+	}],
+	[2, async ({ addrType, port, addrBytes }, param) => {
+		const httpAuth = parseAuthString(param);
+		return connectViaHttpProxy(addrType, port, httpAuth, addrBytes);
+	}],
+	[3, async (_parsedRequest, param) => {
+		const [host, port] = parseHostPort(param, 443);
+		return createConnect(host, port);
+	}]
+]);
+const paramRegex = /(gs5|s5all|ghttp|httpall|s5|socks|http|ip)(?:=|:\/\/|%3A%2F%2F)([^&]+)|(proxyall|globalproxy)/gi;
+const establishTcpConnection = async (parsedRequest, request) => {
+	let u = request.url, clean = u.slice(u.indexOf('/', 10) + 1, u.charCodeAt(u.length - 1) === 47 ? -1 : undefined), list = [];
+	if (clean.length < 6) { list.push({ type: 0 }, { type: 3, param: coloToProxyMap.get(request.cf?.colo) ?? proxyIpAddrs.US }) } else {
+		paramRegex.lastIndex = 0;
+		let m, p = Object.create(null);
+		while ((m = paramRegex.exec(clean))) p[(m[1] || m[3]).toLowerCase()] = m[2] ? (m[2].charCodeAt(m[2].length - 1) === 61 ? m[2].slice(0, -1) : m[2]) : true;
+		const s5 = p.gs5 || p.s5all || p.s5 || p.socks, http = p.ghttp || p.httpall || p.http;
+		const proxyAll = !!(p.gs5 || p.s5all || p.ghttp || p.httpall || p.proxyall || p.globalproxy);
+		if (!proxyAll) list.push({ type: 0 });
+		const add = (v, t) => {
+			if (!v) return;
+			const parts = decodeURIComponent(v).split(',');
+			for (let i = 0; i < parts.length; i++) if (parts[i]) list.push({ type: t, param: parts[i] });
+		};
+		for (let i = 0; i < proxyStrategyOrder.length; i++) {
+			const k = proxyStrategyOrder[i];
+			k === 'socks' ? add(s5, 1) : k === 'http' ? add(http, 2) : 0;
+		}
+		if (proxyAll) { if (!list.length) list.push({ type: 0 }) } else {
+			add(p.ip, 3);
+			list.push({ type: 3, param: coloToProxyMap.get(request.cf?.colo) ?? proxyIpAddrs.US });
+		}
+	}
+	for (let i = 0; i < list.length; i++) {
+		try {
+			const socket = await strategyExecutorMap.get(list[i].type)?.(parsedRequest, list[i].param);
+			if (socket) return socket;
+		} catch { }
+	}
+	return null;
+};
+const safeBufferSize = bufferSize - 4096;
+const manualPipe = async (readable, writable) => {
+	let buffer = new Uint8Array(bufferSize), offset = 0, timerId = null, resume = null;
+	const flushBuffer = () => {
+		offset > 0 && (writable.send(buffer.slice(0, offset)), offset = 0);
+		timerId && (clearTimeout(timerId), timerId = null), resume?.(), resume = null;
+	};
+	const reader = readable.getReader();
+	try {
+		while (true) {
+			const { done, value: chunk } = await reader.read();
+			if (done) break;
+			if (chunk.length < 4096) {
+				flushBuffer();
+				writable.send(chunk);
+			} else {
+				buffer.set(chunk, offset);
+				offset += chunk.length;
+				timerId || (timerId = setTimeout(flushBuffer, flushTime));
+				if (offset > safeBufferSize) await new Promise(resolve => resume = resolve);
+			}
+		}
+	} finally { flushBuffer(), reader.releaseLock() }
+};
+const handleWebSocketConn = async (webSocket, request) => {
+	const protocolHeader = request.headers.get('sec-websocket-protocol');
+	// @ts-ignore
+	const earlyData = protocolHeader ? Uint8Array.fromBase64(protocolHeader, { alphabet: 'base64url' }) : null;
+	const webSocketStream = new ReadableStream({
+		start(controller) {
+			if (earlyData) controller.enqueue(earlyData);
+			webSocket.addEventListener("message", event => controller.enqueue(event.data));
+		},
+		cancel() { if (!earlyData) webSocket.close() }
+	});
+	let messageHandler, tcpSocket;
+	const closeSocket = () => { if (!earlyData) { tcpSocket?.close(), webSocket?.close() } };
+	webSocketStream.pipeTo(new WritableStream({
+		async write(chunk) {
+			if (messageHandler) return messageHandler(chunk);
+			chunk = earlyData ? chunk : new Uint8Array(chunk);
+			let parsedRequest;
+			if (chunk.length > 58 && chunk[56] === 0x0d && chunk[57] === 0x0a) {
+				parsedRequest = parseTransparent(chunk);
+			} else if ((parsedRequest = parseRequestData(chunk))) {
+				webSocket.send(new Uint8Array([chunk[0], 0]));
+			} else { parsedRequest = parseShadow(chunk) }
+			if (!parsedRequest) throw new Error();
+			const payload = chunk.subarray(parsedRequest.dataOffset);
+			tcpSocket = await establishTcpConnection(parsedRequest, request);
+			if (!tcpSocket) throw new Error();
+			const tcpWriter = tcpSocket.writable.getWriter();
+			if (payload.byteLength) tcpWriter.write(payload);
+			messageHandler = (chunk) => tcpWriter.write(chunk);
+			manualPipe(tcpSocket.readable, webSocket);
+		}
+	})).catch(() => closeSocket()).finally(() => closeSocket());
+};
 export default {
-    async fetch(req, env, ctx) {
-        try {
-            const url = new URL(req.url);
-            const upgrade = req.headers.get('Upgrade');
-            const region = _Geo.detect(req);
-            const fb = await _Geo.getBest(region);
-
-            if (upgrade === 'websocket') {
-                return await _Handler.ws(req, fb);
-            }
-
-            const path = url.pathname;
-            const uuid = _U.u();
-            if (path.includes('/sub') || path.includes(uuid)) {
-                return await _Handler.sub(req, url, uuid);
-            }
-
-            return _Handler.page(req, uuid);
-        } catch (e) {
-            return new Response(e.toString(), { status: 500 });
-        }
-    }
-};
-
-const _Handler = {
-    page: (req, uid) => {
-        const html = `<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Service</title><style>body{background:#000;color:#0f0;font-family:monospace;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh}button{background:#020;color:#0f0;border:1px solid #0f0;padding:10px 20px;margin:10px;cursor:pointer}</style></head><body><h1>STATUS: ONLINE</h1><button onclick="c('clash')">Clash</button><button onclick="c('vless')">VLESS</button><script>const u="${uid}";const b=window.location.origin+"/"+u;const a="${_U.s()}";function c(t){let x="";if(t==='clash')x=a+"?target=clash&url="+encodeURIComponent(b)+"&insert=false";else return fetch(b).then(r=>r.text()).then(t=>n(atob(t)));n(x)}function n(t){navigator.clipboard.writeText(t).then(()=>alert('Copied!'));}</script></body></html>`;
-        return new Response(html, { headers: { 'Content-Type': 'text/html; charset=utf-8' } });
-    },
-
-    sub: async (req, url, uid) => {
-        const host = url.hostname;
-        const links = [];
-        const push = (addr, port, name) => {
-            const sAddr = addr.includes(':') ? `[${addr}]` : addr;
-            links.push(`vless://${uid}@${sAddr}:${port}?encryption=none&security=tls&sni=${host}&fp=randomized&type=ws&host=${host}&path=%2F%3Fed%3D2048#${encodeURIComponent(name)}`);
-        };
-
-        push(host, 443, "原生节点");
-
-        const domains = _U.j(_K.D_LIST);
-        domains.forEach(d => {
-            const dn = typeof d === 'string' ? d : d.domain;
-            push(dn, 443, dn);
-        });
-
-        try {
-            const r = await fetch(_U.g());
-            if (r.ok) {
-                const t = await r.text();
-                t.split('\n').forEach(l => {
-                    const m = l.trim().match(/^([^:]+):(\d+)#(.*)$/);
-                    if (m) push(m[1], m[2], m[3] || m[1]);
-                });
-            }
-        } catch {}
-
-        if (!links.length) links.push(`vless://00000000-0000-0000-0000-000000000000@127.0.0.1:80?encryption=none&security=none&type=ws&host=error.com&path=%2F#Error`);
-
-        return new Response(btoa(links.join('\n')), { headers: { 'Content-Type': 'text/plain; charset=utf-8' } });
-    },
-
-    ws: async (req, fallback) => {
-        const { 0: client, 1: server } = new WebSocketPair();
-        server.accept();
-        
-        let rSocket = null;
-        let isDns = false;
-        const ed = req.headers.get('sec-websocket-protocol') || '';
-
-        const readable = new ReadableStream({
-            start(ctrl) {
-                server.addEventListener('message', e => { if(server.readyState===1) ctrl.enqueue(e.data); });
-                server.addEventListener('close', () => ctrl.close());
-                server.addEventListener('error', e => ctrl.error(e));
-                if (ed) {
-                    try { 
-                        const b = atob(ed.replace(/-/g, '+').replace(/_/g, '/'));
-                        const a = Uint8Array.from(b, c => c.charCodeAt(0));
-                        ctrl.enqueue(a.buffer);
-                    } catch {} 
-                }
-            }
-        });
-
-        readable.pipeTo(new WritableStream({
-            async write(chunk) {
-                if (isDns) return _Handler.fwdUdp(chunk, server);
-                
-                if (rSocket) {
-                    const w = rSocket.writable.getWriter();
-                    await w.write(chunk);
-                    w.releaseLock();
-                    return;
-                }
-
-                const res = _P.parse(chunk, _U.u());
-                if (res.err) return server.close();
-
-                if (res.isUDP) {
-                    if (res.port === 53) isDns = true;
-                    else return server.close(); 
-                }
-
-                const respHeader = new Uint8Array([res.ver[0], 0]);
-                const payload = chunk.slice(res.idx);
-
-                if (isDns) return _Handler.fwdUdp(payload, server, respHeader);
-
-                await _Handler.connTcp(res.type, res.host, res.port, payload, server, respHeader, (s) => rSocket = s, fallback);
-            }
-        })).catch(() => {});
-
-        return new Response(null, { status: 101, webSocket: client });
-    },
-
-    connTcp: async (type, host, port, payload, ws, head, setSock, fb) => {
-        const doConn = async (h, p) => {
-            const pp = parseInt(String(p), 10);
-            const s = connect({ hostname: h, port: pp });
-            const w = s.writable.getWriter();
-            await w.write(payload);
-            w.releaseLock();
-            return s;
-        };
-
-        const pipe = (remote, header) => {
-            setSock(remote);
-            remote.readable.pipeTo(new WritableStream({
-                async write(v) {
-                    if (ws.readyState === 1) {
-                        if (header) {
-                            ws.send(await new Blob([header, v]).arrayBuffer());
-                            header = null;
-                        } else {
-                            ws.send(v);
-                        }
-                    }
-                }
-            })).catch(() => {});
-        };
-
-        try {
-            const s = await doConn(host, port);
-            pipe(s, head);
-        } catch {
-            try {
-                const parts = fb.split(':');
-                const fbH = parts[0] || host;
-                const fbP = parts[1] || port;
-                const s = await doConn(fbH, fbP);
-                pipe(s, head);
-            } catch {}
-        }
-    },
-
-    fwdUdp: async (chunk, ws, head) => {
-        try {
-            const s = connect({ hostname: '8.8.4.4', port: 53 });
-            const w = s.writable.getWriter();
-            await w.write(chunk);
-            w.releaseLock();
-            
-            let h = head;
-            s.readable.pipeTo(new WritableStream({
-                async write(v) {
-                    if (ws.readyState === 1) {
-                        if (h) {
-                            ws.send(await new Blob([h, v]).arrayBuffer());
-                            h = null;
-                        } else {
-                            ws.send(v);
-                        }
-                    }
-                }
-            }));
-        } catch {}
-    }
+	async fetch(request) {
+		if (request.headers.get('Upgrade') === 'websocket') {
+			const { 0: clientSocket, 1: webSocket } = new WebSocketPair();
+			webSocket.accept();
+			handleWebSocketConn(webSocket, request);
+			return new Response(null, { status: 101, webSocket: clientSocket });
+		}
+		return new Response(html, { status: 404, headers: { 'Content-Type': 'text/html; charset=UTF-8' } });
+	}
 };
