@@ -49,31 +49,30 @@ jobs:
           const originalCode = fs.readFileSync(sourceFilePath, 'utf8');
 
           const obfuscationOptions = {
-              // --- 压缩设置 ---
               compact: true,
               simplify: true,
-              
-              // --- 混淆强度 ---
               controlFlowFlattening: true,
-              controlFlowFlatteningThreshold: 0.3, // 保持 30% 混淆，兼顾体积和安全性
+              controlFlowFlatteningThreshold: 0.4,
               
-              deadCodeInjection: false,
-              deadCodeInjectionThreshold: 0,
+              // 关键配置，防止 1101 错误
+              renameGlobals: false,
+              renameProperties: false,
+              ignoreImports: true,
               
-              // --- 字符串处理 ---
+              // 保护关键函数名不被改掉
+              reservedNames: [
+                  'fetch', 'default', 'connect', 'env', 'ctx', 'request',
+                  'WebSocketPair', 'Response', 'ReadableStream', 'WritableStream'
+              ],
+
               stringArray: true,
               stringArrayThreshold: 0.75,
-              stringArrayEncoding: [],       // 关闭 Base64 以减小体积
+              stringArrayEncoding: [], // 关闭 Base64
               splitStrings: false,
               
-              // --- 变量混淆 ---
-              identifierNamesGenerator: 'mangled',
-              renameGlobals: false,
-              
-              // --- 关键修复 ---
-              target: 'browser-no-eval',     
-              disableConsoleOutput: false,   // <--- 这里必须改为 false，否则 CF Worker 会报错
-              selfDefending: false,          // 关闭自我防御以避免额外的运行时错误
+              target: 'browser-no-eval',
+              disableConsoleOutput: false, // 防止 'console' undefined 错误
+              selfDefending: false,
               debugProtection: false
           };
 
