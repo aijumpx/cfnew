@@ -174,4 +174,127 @@ async function handleSubscription(request, url) {
 
   // 4. 兜底处理
   if (finalLinks.length === 0) {
-    finalLinks.push(`vless://00000000-0000-0000-0000-000000000000@127.0.0.1:80?encryption=none&security=none&type=ws&host=
+    finalLinks.push(`vless://00000000-0000-0000-0000-000000000000@127.0.0.1:80?encryption=none&security=none&type=ws&host=error.com&path=%2F%3Fed%3D2048#Error`);
+  }
+
+  return new Response(btoa(finalLinks.join('\n')), {
+    headers: { 'Content-Type': 'text/plain; charset=utf-8' }
+  });
+}
+
+function generateVlessLink(addr, port, name, host) {
+  const safeAddr = addr.includes(':') ? `[${addr}]` : addr;
+  const params = `encryption=none&security=tls&sni=${host}&fp=randomized&type=ws&host=${host}&path=%2F%3Fed%3D2048`;
+  return `vless://${CONFIG.UUID}@${safeAddr}:${port}?${params}#${encodeURIComponent(name)}`;
+}
+
+// --- WebSocket 代理核心 (优化版) ---
+
+async function handleWsRequest(request, fallbackAddr) {
+  const { 0: client, 1: server } = new WebSocketPair();
+  server.accept();
+
+  let addressHeader = '';
+  let portHeader = 0;
+  let hasConnected = false;
+  let remoteSocket = null;
+
+  const readable = new ReadableStream({
+    start(controller) {
+      server.addEventListener('message', async (msg) => {
+        const chunk = msg.data;
+        
+        // 1. 已建立连接，直接转发
+        if (hasConnected && remoteSocket) {
+          const writer = remoteSocket.writable.getWriter();
+          await writer.write(chunk);
+          writer.releaseLock();
+          return;
+        }
+
+        // 2. 处理首包 (VLESS Header 解析)
+        const buffer = new Uint8Array(chunk); 
+        
+        try {
+            const version = buffer[0];
+            const optLen = buffer[17];
+            const cmd = buffer[18 + optLen]; // 1=TCP, 2=UDP
+            
+            const portIndex = 19 + optLen;
+            const port = (buffer[portIndex] << 8) | buffer[portIndex + 1];
+            
+            const addrType = buffer[portIndex + 2];
+            let addrEnd = portIndex + 3;
+            let address = '';
+
+            if (addrType === 1) { // IPv4
+                address = buffer.slice(addrEnd, addrEnd + 4).join('.');
+                addrEnd += 4;
+            } else if (addrType === 2) { // Domain
+                const len = buffer[addrEnd];
+                address = new TextDecoder().decode(buffer.slice(addrEnd + 1, addrEnd + 1 + len));
+                addrEnd += 1 + len;
+            } else if (addrType === 3) { // IPv6
+                address = "ipv6-placeholder"; 
+                addrEnd += 16;
+            }
+
+            // 构建响应头
+            const responseHeader = new Uint8Array([version, 0]);
+            
+            // 准备实际转发的数据 (去掉 VLESS 头)
+            const rawData = buffer.slice(addrEnd);
+
+            // 建立连接
+            if (cmd === 2) { // UDP (DNS)
+               // 简化：仅转发 53 端口的 UDP
+               address = '8.8.8.8';
+               portHeader = 53;
+            } else {
+               addressHeader = address;
+               portHeader = port;
+            }
+
+            // 执行连接 (带 fallback)
+            // 修复点: 确保 connect 参数永远是 string 和 number，不依赖隐式转换
+            const targetHost = addressHeader || '1.1.1.1';
+            const targetPort = portHeader || 80;
+
+            try {
+                remoteSocket = connect({ hostname: targetHost, port: targetPort });
+            } catch {
+                // 连接失败，使用 fallback
+                // 修复点: 严格解析，处理 split 可能带来的 undefined
+                const parts = fallbackAddr.split(':');
+                const fbH = parts[0] || 'ProxyIP.HK.CMLiussss.net';
+                const fbPStr = parts[1] || '443';
+                remoteSocket = connect({ hostname: fbH, port: parseInt(fbPStr, 10) });
+            }
+
+            hasConnected = true;
+            
+            // 写入剩余数据
+            const writer = remoteSocket.writable.getWriter();
+            await writer.write(rawData);
+            writer.releaseLock();
+
+            // 双向转发
+            remoteSocket.readable.pipeTo(new WritableStream({
+                async write(v) {
+                   if(server.readyState === 1) server.send(v);
+                }
+            })).catch(() => {});
+
+            // 发送首包响应
+            server.send(responseHeader);
+
+        } catch (e) {
+            console.log(e);
+            server.close();
+        }
+      });
+    }
+  });
+
+  return new Response(null, { status: 101, webSocket: client });
+}
