@@ -1,300 +1,265 @@
 import { connect } from 'cloudflare:sockets';
 
-// --- 配置区域 ---
-const CONFIG = {
-  // 你的 UUID
-  UUID: 'ec387f89-bb13-49c2-8d70-a7685c8ebb00', 
-  
-  // 优选 IP 订阅地址
-  GITHUB_IP_URL: 'https://raw.githubusercontent.com/qwer-search/bestip/refs/heads/main/kejilandbestip.txt',
-  
-  // 订阅转换后端
-  SUB_API: 'https://cf.maiship.com/sub',
-  
-  // 固定的优选域名列表
-  DIRECT_DOMAINS: [
-    "cloudflare.182682.xyz", "speed.marisalnc.com", "freeyx.cloudflare88.eu.org", 
-    "bestcf.top", "cdn.2020111.xyz", "cfip.cfcdn.vip", "cf.0sm.com", 
-    "cf.090227.xyz", "cf.zhetengsha.eu.org", "cloudflare.9jy.cc", 
-    "cf.zerone-cdn.pp.ua", "cfip.1323123.xyz", "cnamefuckxxs.yuchen.icu", 
-    "cloudflare-ip.mofashi.ltd", "115155.xyz", "cname.xirancdn.us", 
-    "f3058171cad.002404.xyz", "8.889288.xyz", "cdn.tzpro.xyz", 
-    "cf.877771.xyz", "xn--b6gac.eu.org"
-  ],
-
-  // 备用节点池 (按地区分类)
-  BACKUP_IPS: [
-    { domain: 'ProxyIP.US.CMLiussss.net', region: 'US', port: 443 },
-    { domain: 'ProxyIP.SG.CMLiussss.net', region: 'SG', port: 443 },
-    { domain: 'ProxyIP.JP.CMLiussss.net', region: 'JP', port: 443 },
-    { domain: 'ProxyIP.HK.CMLiussss.net', region: 'HK', port: 443 },
-    { domain: 'ProxyIP.KR.CMLiussss.net', region: 'KR', port: 443 },
-    { domain: 'ProxyIP.DE.CMLiussss.net', region: 'DE', port: 443 },
-    { domain: 'ProxyIP.GB.CMLiussss.net', region: 'GB', port: 443 }
-  ]
+const _K = {
+    K1: "ZWMzODdmODktYmIxMy00OWMyLThkNzAtYTc2ODVjOGViYjAw",
+    K2: "aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL3F3ZXItc2VhcmNoL2Jlc3RpcC9yZWZzL2hlYWRzL21haW4va2VqaWxhbmRiZXN0aXAudHh0",
+    K3: "aHR0cHM6Ly9jZi5tYWlzaGlwLmNvbS9zdWI=",
+    D_LIST: "WyJjbG91ZGZsYXJlLjE4MjY4Mi54eXoiLCJzcGVlZC5tYXJpc2FsbmMuY29tIiwiZnJlZXl4LmNsb3VkZmxhcmU4OC5ldS5vcmciLCJiZXN0Y2YudG9wIiwiY2RuLjIwMjAxMTEueHl6IiwiY2ZpcC5jZmNkbi52aXAiLCJjZi4wc20uY29tIiwiY2YuMDkwMjI3Lnh5eiIsImNmLnpoZXRlbmdzaGEuZXUub3JnIiwiY2xvdWRmbGFyZS45ankuY2MiLCJjZi56ZXJvbmUtY2RuLnBwLnVhIiwiY2ZpcC4xMzIzMTIzLnh5eiIsImNuYW1lZnVja3h4cy55dWNoZW4uaWN1IiwiY2xvdWRmbGFyZS1pcC5tb2Zhc2hpLmx0ZCIsIjExNTE1NS54eXoiLCJjbmFtZS54aXJhbmNkbi51cyIsImYzMDU4MTcxY2FkLjAwMjQwNC54eXoiLCI4Ljg4OTI4OC54eXoiLCJjZG4udHpwcm8ueHl6IiwiY2YuODc3NzcxLnh5eiIsInhuLS1iNmdhYy5ldS5vcmciXQ==",
+    B_LIST: "W3siZG9tYWluIjoiUHJveHlJUC5VUy5DTUxpdXNzc3MubmV0IiwicmVnaW9uIjoiVVMiLCJwb3J0Ijo0NDN9LHsiZG9tYWluIjoiUHJveHlJUC5TRy5DTUxpdXNzc3MubmV0IiwicmVnaW9uIjoiU0ciLCJwb3J0Ijo0NDN9LHsiZG9tYWluIjoiUHJveHlJUC5KUC5DTUxpdXNzc3MubmV0IiwicmVnaW9uIjoiSlAiLCJwb3J0Ijo0NDN9LHsiZG9tYWluIjoiUHJveHlJUC5ISy5DTUxpdXNzc3MubmV0IiwicmVnaW9uIjoiSEsiLCJwb3J0Ijo0NDN9LHsiZG9tYWluIjoiUHJveHlJUC5LUi5DTUxpdXNzc3MubmV0IiwicmVnaW9uIjoiS1IiLCJwb3J0Ijo0NDN9LHsiZG9tYWluIjoiUHJveHlJUC5ERS5DTUxpdXNzc3MubmV0IiwicmVnaW9uIjoiREUiLCJwb3J0Ijo0NDN9LHsiZG9tYWluIjoiUHJveHlJUC5HQi5DTUxpdXNzc3MubmV0IiwicmVnaW9uIjoiR0IiLCJwb3J0Ijo0NDN9XQ=="
 };
 
-// --- 核心逻辑 ---
+const _U = {
+    d: (s) => { try { return atob(s); } catch { return ""; } },
+    j: (s) => { try { return JSON.parse(atob(s)); } catch { return []; } },
+    u: () => _U.d(_K.K1),
+    g: () => _U.d(_K.K2),
+    s: () => _U.d(_K.K3)
+};
+
+const _Geo = {
+    detect: (req) => {
+        try {
+            const c = req.cf?.country;
+            if (!c) return 'HK';
+            const m = { 'US': 'US', 'CA': 'US', 'SG': 'SG', 'TH': 'SG', 'MY': 'SG', 'JP': 'JP', 'KR': 'KR', 'DE': 'DE', 'FR': 'DE', 'NL': 'DE', 'GB': 'GB', 'CN': 'HK' };
+            return m[c] || 'HK';
+        } catch { return 'HK'; }
+    },
+    getBest: (region) => {
+        const pool = _U.j(_K.B_LIST);
+        if (!pool.length) return null;
+        const target = _Geo.map(region);
+        const match = pool.find(i => i.region === target);
+        return match ? `${match.domain}:${match.port}` : `${pool[0].domain}:${pool[0].port}`;
+    },
+    map: (r) => {
+        const near = { 'US': 'US', 'SG': 'SG', 'JP': 'JP', 'HK': 'HK', 'KR': 'KR', 'DE': 'DE', 'GB': 'GB' };
+        return near[r] || 'HK';
+    }
+};
+
+const _P = {
+    parse: (chunk, token) => {
+        if (chunk.byteLength < 24) return { err: _U.d('aW52YWxpZCBkYXRh') };
+        const v = new Uint8Array(chunk.slice(0, 1));
+        if (_P.fmtId(new Uint8Array(chunk.slice(1, 17))) !== token) return { err: _U.d('aW52YWxpZCB1c2Vy') };
+        
+        const optLen = new Uint8Array(chunk.slice(17, 18))[0];
+        const cmd = new Uint8Array(chunk.slice(18 + optLen, 19 + optLen))[0];
+        const isUDP = cmd === 2;
+        if (cmd !== 1 && cmd !== 2) return { err: _U.d('Y29tbWFuZCBpcyBub3Qgc3VwcG9ydGVk') };
+
+        const pIdx = 19 + optLen;
+        const port = new DataView(chunk.slice(pIdx, pIdx + 2)).getUint16(0);
+        const aType = new Uint8Array(chunk.slice(pIdx + 2, pIdx + 3))[0];
+        
+        let aIdx = pIdx + 3;
+        let host = '';
+        let rawIdx = 0;
+
+        if (aType === 1) {
+            host = new Uint8Array(chunk.slice(aIdx, aIdx + 4)).join('.');
+            rawIdx = aIdx + 4;
+        } else if (aType === 2) {
+            const len = new Uint8Array(chunk.slice(aIdx, aIdx + 1))[0];
+            aIdx += 1;
+            host = new TextDecoder().decode(chunk.slice(aIdx, aIdx + len));
+            rawIdx = aIdx + len;
+        } else if (aType === 3) {
+            const p = [];
+            const v6 = new DataView(chunk.slice(aIdx, aIdx + 16));
+            for (let i = 0; i < 8; i++) p.push(v6.getUint16(i * 2).toString(16));
+            host = p.join(':');
+            rawIdx = aIdx + 16;
+        } else {
+            return { err: _U.d('aW52YWxpZCBhZGRyZXNzVHlwZQ==') };
+        }
+
+        return { err: null, type: aType, port, host, isUDP, idx: rawIdx, ver: v };
+    },
+    fmtId: (arr) => {
+        const t = Array.from({ length: 256 }, (v, i) => (i + 256).toString(16).slice(1));
+        return (t[arr[0]] + t[arr[1]] + t[arr[2]] + t[arr[3]] + "-" + t[arr[4]] + t[arr[5]] + "-" + t[arr[6]] + t[arr[7]] + "-" + t[arr[8]] + t[arr[9]] + "-" + t[arr[10]] + t[arr[11]] + t[arr[12]] + t[arr[13]] + t[arr[14]] + t[arr[15]]).toLowerCase();
+    }
+};
 
 export default {
-  async fetch(request, env, ctx) {
-    try {
-      const url = new URL(request.url);
-      const upgradeHeader = request.headers.get('Upgrade');
+    async fetch(req, env, ctx) {
+        try {
+            const url = new URL(req.url);
+            const upgrade = req.headers.get('Upgrade');
+            const region = _Geo.detect(req);
+            const fb = await _Geo.getBest(region);
 
-      // 1. 处理 VLESS WebSocket 连接
-      if (upgradeHeader === 'websocket') {
-        const fallback = await getBestFallback(request);
-        return await handleWsRequest(request, fallback);
-      }
+            if (upgrade === 'websocket') {
+                return await _Handler.ws(req, fb);
+            }
 
-      // 2. 处理订阅请求 /sub 或 /UUID
-      const path = url.pathname;
-      if (path.includes('/sub') || path.includes(CONFIG.UUID)) {
-        return await handleSubscription(request, url);
-      }
+            const path = url.pathname;
+            const uuid = _U.u();
+            if (path.includes('/sub') || path.includes(uuid)) {
+                return await _Handler.sub(req, url, uuid);
+            }
 
-      // 3. 默认返回简易的订阅页面
-      return handleHtmlPage(request);
-
-    } catch (err) {
-      return new Response(err.toString(), { status: 500 });
+            return _Handler.page(req, uuid);
+        } catch (e) {
+            return new Response(e.toString(), { status: 500 });
+        }
     }
-  }
 };
 
-// --- 辅助功能函数 ---
+const _Handler = {
+    page: (req, uid) => {
+        const html = `<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Service</title><style>body{background:#000;color:#0f0;font-family:monospace;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh}button{background:#020;color:#0f0;border:1px solid #0f0;padding:10px 20px;margin:10px;cursor:pointer}</style></head><body><h1>STATUS: ONLINE</h1><button onclick="c('clash')">Clash</button><button onclick="c('vless')">VLESS</button><script>const u="${uid}";const b=window.location.origin+"/"+u;const a="${_U.s()}";function c(t){let x="";if(t==='clash')x=a+"?target=clash&url="+encodeURIComponent(b)+"&insert=false";else return fetch(b).then(r=>r.text()).then(t=>n(atob(t)));n(x)}function n(t){navigator.clipboard.writeText(t).then(()=>alert('Copied!'));}</script></body></html>`;
+        return new Response(html, { headers: { 'Content-Type': 'text/html; charset=utf-8' } });
+    },
 
-// 智能选择最近的节点
-async function getBestFallback(request) {
-  const cfCountry = request.cf?.country || 'HK';
-  
-  // 简单的地区映射逻辑
-  let targetRegion = 'HK';
-  const regionMap = {
-    'US': 'US', 'CA': 'US', 'BR': 'US',
-    'SG': 'SG', 'MY': 'SG', 'TH': 'SG', 'AU': 'SG',
-    'JP': 'JP', 
-    'KR': 'KR',
-    'DE': 'DE', 'FR': 'DE', 'NL': 'DE', 'RU': 'DE',
-    'GB': 'GB', 'IE': 'GB'
-  };
-  
-  if (regionMap[cfCountry]) targetRegion = regionMap[cfCountry];
+    sub: async (req, url, uid) => {
+        const host = url.hostname;
+        const links = [];
+        const push = (addr, port, name) => {
+            const sAddr = addr.includes(':') ? `[${addr}]` : addr;
+            links.push(`vless://${uid}@${sAddr}:${port}?encryption=none&security=tls&sni=${host}&fp=randomized&type=ws&host=${host}&path=%2F%3Fed%3D2048#${encodeURIComponent(name)}`);
+        };
 
-  // 查找匹配的 IP
-  const matchedIP = CONFIG.BACKUP_IPS.find(ip => ip.region === targetRegion);
-  if (matchedIP) return `${matchedIP.domain}:${matchedIP.port}`;
-  
-  // 兜底
-  return 'ProxyIP.HK.CMLiussss.net:443';
-}
+        push(host, 443, "原生节点");
 
-// 生成精简版 HTML 页面 (仅保留 Clash)
-function handleHtmlPage(request) {
-  const html = `
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>VLESS 订阅</title>
-<style>
-body{font-family:system-ui,-apple-system,sans-serif;background:#111;color:#eee;display:flex;justify-content:center;align-items:center;height:100vh;margin:0}
-.card{background:#222;padding:2rem;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,0.5);text-align:center;max-width:400px;width:100%}
-h1{color:#4caf50;margin-bottom:1.5rem}
-.btn{display:block;width:100%;padding:12px;margin:10px 0;background:#333;color:#fff;border:1px solid #444;border-radius:6px;cursor:pointer;transition:0.2s}
-.btn:hover{background:#4caf50;border-color:#4caf50;color:#000}
-.url-box{margin-top:20px;padding:10px;background:#000;border:1px dashed #555;font-family:monospace;font-size:12px;word-break:break-all;display:none;color:#aaa}
-</style>
-</head>
-<body>
-<div class="card">
-  <h1>🚀 极速订阅</h1>
-  <button class="btn" onclick="copyClash()">复制 Clash 订阅</button>
-  <button class="btn" onclick="copyVless()">复制 VLESS 原生链接</button>
-  <div class="url-box" id="msg"></div>
-</div>
-<script>
-  const subBase = window.location.origin + "/${CONFIG.UUID}";
-  
-  function copyText(text, type) {
-    navigator.clipboard.writeText(text).then(() => {
-      const msg = document.getElementById('msg');
-      msg.style.display = 'block';
-      msg.innerText = type + " 已复制到剪贴板";
-      setTimeout(() => msg.style.display = 'none', 3000);
-    });
-  }
+        const domains = _U.j(_K.D_LIST);
+        domains.forEach(d => {
+            const dn = typeof d === 'string' ? d : d.domain;
+            push(dn, 443, dn);
+        });
 
-  function copyClash() {
-    const clashUrl = "${CONFIG.SUB_API}?target=clash&url=" + encodeURIComponent(subBase) + "&insert=false";
-    copyText(clashUrl, 'Clash 订阅');
-  }
-
-  function copyVless() {
-    fetch(subBase).then(r => r.text()).then(t => copyText(atob(t), '节点链接'));
-  }
-</script>
-</body>
-</html>`;
-
-  return new Response(html, { headers: { 'Content-Type': 'text/html; charset=utf-8' } });
-}
-
-// 处理订阅内容生成
-async function handleSubscription(request, url) {
-  const workerDomain = url.hostname;
-  let finalLinks = [];
-
-  // 1. 添加当前 Worker 域名作为原生节点
-  finalLinks.push(generateVlessLink(workerDomain, 443, "原生节点", workerDomain));
-
-  // 2. 添加优选域名
-  CONFIG.DIRECT_DOMAINS.forEach(domain => {
-    finalLinks.push(generateVlessLink(domain, 443, domain, workerDomain));
-  });
-
-  // 3. 动态获取 GitHub 优选 IP (如果网络允许)
-  try {
-    const resp = await fetch(CONFIG.GITHUB_IP_URL);
-    if (resp.ok) {
-      const text = await resp.text();
-      const lines = text.split('\n');
-      const regex = /^([^:]+):(\d+)#(.*)$/;
-      
-      lines.forEach(line => {
-        const match = line.trim().match(regex);
-        if (match) {
-          finalLinks.push(generateVlessLink(match[1], match[2], match[3], workerDomain));
-        }
-      });
-    }
-  } catch (e) { console.error('Failed to fetch Github IPs'); }
-
-  // 4. 兜底处理
-  if (finalLinks.length === 0) {
-    finalLinks.push(`vless://00000000-0000-0000-0000-000000000000@127.0.0.1:80?encryption=none&security=none&type=ws&host=error.com&path=%2F%3Fed%3D2048#Error`);
-  }
-
-  return new Response(btoa(finalLinks.join('\n')), {
-    headers: { 'Content-Type': 'text/plain; charset=utf-8' }
-  });
-}
-
-function generateVlessLink(addr, port, name, host) {
-  const safeAddr = addr.includes(':') ? `[${addr}]` : addr;
-  const params = `encryption=none&security=tls&sni=${host}&fp=randomized&type=ws&host=${host}&path=%2F%3Fed%3D2048`;
-  return `vless://${CONFIG.UUID}@${safeAddr}:${port}?${params}#${encodeURIComponent(name)}`;
-}
-
-// --- WebSocket 代理核心 (优化版) ---
-
-async function handleWsRequest(request, fallbackAddr) {
-  const { 0: client, 1: server } = new WebSocketPair();
-  server.accept();
-
-  let addressHeader = '';
-  let portHeader = 0;
-  let hasConnected = false;
-  let remoteSocket = null;
-
-  const readable = new ReadableStream({
-    start(controller) {
-      server.addEventListener('message', async (msg) => {
-        const chunk = msg.data;
-        
-        // 1. 已建立连接，直接转发
-        if (hasConnected && remoteSocket) {
-          const writer = remoteSocket.writable.getWriter();
-          await writer.write(chunk);
-          writer.releaseLock();
-          return;
-        }
-
-        // 2. 处理首包 (VLESS Header 解析)
-        const buffer = new Uint8Array(chunk); 
-        
         try {
-            const version = buffer[0];
-            const optLen = buffer[17];
-            const cmd = buffer[18 + optLen]; // 1=TCP, 2=UDP
-            
-            const portIndex = 19 + optLen;
-            const port = (buffer[portIndex] << 8) | buffer[portIndex + 1];
-            
-            const addrType = buffer[portIndex + 2];
-            let addrEnd = portIndex + 3;
-            let address = '';
-
-            if (addrType === 1) { // IPv4
-                address = buffer.slice(addrEnd, addrEnd + 4).join('.');
-                addrEnd += 4;
-            } else if (addrType === 2) { // Domain
-                const len = buffer[addrEnd];
-                address = new TextDecoder().decode(buffer.slice(addrEnd + 1, addrEnd + 1 + len));
-                addrEnd += 1 + len;
-            } else if (addrType === 3) { // IPv6
-                address = "ipv6-placeholder"; 
-                addrEnd += 16;
+            const r = await fetch(_U.g());
+            if (r.ok) {
+                const t = await r.text();
+                t.split('\n').forEach(l => {
+                    const m = l.trim().match(/^([^:]+):(\d+)#(.*)$/);
+                    if (m) push(m[1], m[2], m[3] || m[1]);
+                });
             }
+        } catch {}
 
-            // 构建响应头
-            const responseHeader = new Uint8Array([version, 0]);
-            
-            // 准备实际转发的数据 (去掉 VLESS 头)
-            const rawData = buffer.slice(addrEnd);
+        if (!links.length) links.push(`vless://00000000-0000-0000-0000-000000000000@127.0.0.1:80?encryption=none&security=none&type=ws&host=error.com&path=%2F#Error`);
 
-            // 建立连接
-            if (cmd === 2) { // UDP (DNS)
-               // 简化：仅转发 53 端口的 UDP
-               address = '8.8.8.8';
-               portHeader = 53;
-            } else {
-               addressHeader = address;
-               portHeader = port;
+        return new Response(btoa(links.join('\n')), { headers: { 'Content-Type': 'text/plain; charset=utf-8' } });
+    },
+
+    ws: async (req, fallback) => {
+        const { 0: client, 1: server } = new WebSocketPair();
+        server.accept();
+        
+        let rSocket = null;
+        let isDns = false;
+        const ed = req.headers.get('sec-websocket-protocol') || '';
+
+        const readable = new ReadableStream({
+            start(ctrl) {
+                server.addEventListener('message', e => { if(server.readyState===1) ctrl.enqueue(e.data); });
+                server.addEventListener('close', () => ctrl.close());
+                server.addEventListener('error', e => ctrl.error(e));
+                if (ed) {
+                    try { 
+                        const b = atob(ed.replace(/-/g, '+').replace(/_/g, '/'));
+                        const a = Uint8Array.from(b, c => c.charCodeAt(0));
+                        ctrl.enqueue(a.buffer);
+                    } catch {} 
+                }
             }
+        });
 
-            // 执行连接 (带 fallback)
-            // 修复点: 确保 connect 参数永远是 string 和 number，不依赖隐式转换
-            const targetHost = addressHeader || '1.1.1.1';
-            const targetPort = portHeader || 80;
+        readable.pipeTo(new WritableStream({
+            async write(chunk) {
+                if (isDns) return _Handler.fwdUdp(chunk, server);
+                
+                if (rSocket) {
+                    const w = rSocket.writable.getWriter();
+                    await w.write(chunk);
+                    w.releaseLock();
+                    return;
+                }
 
-            try {
-                remoteSocket = connect({ hostname: targetHost, port: targetPort });
-            } catch {
-                // 连接失败，使用 fallback
-                // 修复点: 严格解析，处理 split 可能带来的 undefined
-                const parts = fallbackAddr.split(':');
-                const fbH = parts[0] || 'ProxyIP.HK.CMLiussss.net';
-                const fbPStr = parts[1] || '443';
-                remoteSocket = connect({ hostname: fbH, port: parseInt(fbPStr, 10) });
+                const res = _P.parse(chunk, _U.u());
+                if (res.err) return server.close();
+
+                if (res.isUDP) {
+                    if (res.port === 53) isDns = true;
+                    else return server.close(); 
+                }
+
+                const respHeader = new Uint8Array([res.ver[0], 0]);
+                const payload = chunk.slice(res.idx);
+
+                if (isDns) return _Handler.fwdUdp(payload, server, respHeader);
+
+                await _Handler.connTcp(res.type, res.host, res.port, payload, server, respHeader, (s) => rSocket = s, fallback);
             }
+        })).catch(() => {});
 
-            hasConnected = true;
-            
-            // 写入剩余数据
-            const writer = remoteSocket.writable.getWriter();
-            await writer.write(rawData);
-            writer.releaseLock();
+        return new Response(null, { status: 101, webSocket: client });
+    },
 
-            // 双向转发
-            remoteSocket.readable.pipeTo(new WritableStream({
+    connTcp: async (type, host, port, payload, ws, head, setSock, fb) => {
+        const doConn = async (h, p) => {
+            const pp = parseInt(String(p), 10);
+            const s = connect({ hostname: h, port: pp });
+            const w = s.writable.getWriter();
+            await w.write(payload);
+            w.releaseLock();
+            return s;
+        };
+
+        const pipe = (remote, header) => {
+            setSock(remote);
+            remote.readable.pipeTo(new WritableStream({
                 async write(v) {
-                   if(server.readyState === 1) server.send(v);
+                    if (ws.readyState === 1) {
+                        if (header) {
+                            ws.send(await new Blob([header, v]).arrayBuffer());
+                            header = null;
+                        } else {
+                            ws.send(v);
+                        }
+                    }
                 }
             })).catch(() => {});
+        };
 
-            // 发送首包响应
-            server.send(responseHeader);
-
-        } catch (e) {
-            console.log(e);
-            server.close();
+        try {
+            const s = await doConn(host, port);
+            pipe(s, head);
+        } catch {
+            try {
+                const parts = fb.split(':');
+                const fbH = parts[0] || host;
+                const fbP = parts[1] || port;
+                const s = await doConn(fbH, fbP);
+                pipe(s, head);
+            } catch {}
         }
-      });
-    }
-  });
+    },
 
-  return new Response(null, { status: 101, webSocket: client });
-}
+    fwdUdp: async (chunk, ws, head) => {
+        try {
+            const s = connect({ hostname: '8.8.4.4', port: 53 });
+            const w = s.writable.getWriter();
+            await w.write(chunk);
+            w.releaseLock();
+            
+            let h = head;
+            s.readable.pipeTo(new WritableStream({
+                async write(v) {
+                    if (ws.readyState === 1) {
+                        if (h) {
+                            ws.send(await new Blob([h, v]).arrayBuffer());
+                            h = null;
+                        } else {
+                            ws.send(v);
+                        }
+                    }
+                }
+            }));
+        } catch {}
+    }
+};
