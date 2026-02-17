@@ -49,15 +49,32 @@ jobs:
           const originalCode = fs.readFileSync(sourceFilePath, 'utf8');
 
           const obfuscationOptions = {
-              compact: true,
-              controlFlowFlattening: true,       // 开启控制流扁平化，增加难度
-              controlFlowFlatteningThreshold: 1, // 100% 概率
-              stringArray: true,
-              stringArrayEncoding: ['base64'],   // 字符串加密
-              stringArrayThreshold: 1,
-              target: 'browser-no-eval',         // 针对 Cloudflare/Browser 环境优化
-              disableConsoleOutput: true,
-              selfDefending: true                // 开启自我防御
+              // --- 压缩设置 ---
+              compact: true,                  // 压缩代码（移除换行空格）
+              simplify: true,                 // 简化逻辑表达式
+              
+              // --- 混淆强度控制 (关键) ---
+              controlFlowFlattening: true,    // 开启控制流扁平化 (让逻辑乱序)
+              controlFlowFlatteningThreshold: 0.3, // ⚠️ 降至 30% (原先可能为 100%)，大幅减小体积
+              
+              deadCodeInjection: false,       // ⚠️ 关闭僵尸代码注入 (这是体积膨胀的元凶)
+              deadCodeInjectionThreshold: 0,
+              
+              // --- 字符串处理 ---
+              stringArray: true,              // 开启字符串提取
+              stringArrayThreshold: 0.75,     // 75% 的字符串被提取
+              stringArrayEncoding: [],        // ⚠️ 关闭 Base64 加密 (体积减少的关键，仅混淆引用)
+              splitStrings: false,            // ⚠️ 关闭字符串切割 (减少连接符开销)
+              
+              // --- 变量混淆 ---
+              identifierNamesGenerator: 'mangled', // 使用短名称 (a, b, c) 替代长混淆名
+              renameGlobals: false,            // 保护 Worker 全局变量
+              
+              // --- 其他保护 ---
+              target: 'browser-no-eval',      // 针对 Worker 环境
+              disableConsoleOutput: true,     // 禁用 console.log
+              selfDefending: false,           // ⚠️ 关闭自我防御 (减少体积，且防止 Worker 报错)
+              debugProtection: false          // 关闭调试保护
           };
 
           const obfuscatedCode = JavaScriptObfuscator.obfuscate(originalCode, obfuscationOptions).getObfuscatedCode();
