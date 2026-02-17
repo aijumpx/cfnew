@@ -6,7 +6,7 @@ on:
     branches:
       - '**'  # 仅匹配分支推送，排除标签推送
     paths:
-      - '明文源吗'
+      - 'snippets'
 
 jobs:
   build-and-obfuscate:
@@ -92,7 +92,7 @@ jobs:
         run: |
           git config --global user.name 'GitHub Actions Bot'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          git add '少年你相信光吗'
+          git add 'snippetsx'
           if git diff --staged --quiet; then
             echo "No changes to commit, the obfuscated file is already up-to-date."
           else
