@@ -6,7 +6,7 @@ on:
     branches:
       - '**' 
     paths:
-      - 'snippets.js' # 只有当 snippets.js 发生变化时才触发，防止死循环
+      - 'snippets' # 只有当 snippets.js 发生变化时才触发，防止死循环
 
 jobs:
   build-and-obfuscate:
@@ -35,7 +35,7 @@ jobs:
           const path = require('path');
           
           // --- 配置区域 ---
-          const sourceFileName = 'snippets.js';  // 你的源文件名
+          const sourceFileName = 'snippets';  // 你的源文件名
           const outputFileName = 'worker.js';    // 混淆后的文件名
           // ----------------
           
